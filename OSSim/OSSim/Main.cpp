@@ -28,7 +28,6 @@ using namespace std;
 int main()
 {
 
-	//This is a test comment
 	return 0;
 	//Ben's test comment
 	//Ben's test comment 4/2/17
