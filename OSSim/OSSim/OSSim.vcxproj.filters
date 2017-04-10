@@ -23,5 +23,11 @@
     <Text Include="\\mac\Home\Desktop\SIM_DATA.txt">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="data.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="output.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
