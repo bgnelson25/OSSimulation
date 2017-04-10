@@ -80,6 +80,13 @@ int main()
 	jobs (i.e. >100 jobs) and establish EU count for jobs*/
 	DataType Jobs[200];
 	int jobsEU = 0;
+	int LTQ[60]; //create Long term queue
+	int STQ[30]; //create short term queue
+	int IOQ[30]; //create I/O queue
+	int ltqCount = 0;
+	int stqCount = 0;
+	int ioqCount = 0;
+	int jobCount = 0;
 
 	//establish I/O
 	ifstream input("data.txt", ios::in);
@@ -91,9 +98,43 @@ int main()
 	//print data as test
 	PrintData(output, Jobs, jobsEU);
 
-	//3. Get a job into the system.
+	//3. Get first job into the system.
+	job_timer++; //increment job timer
+	if (Jobs[jobCount].interArrivalTime == job_timer) {
+		job_flag = true; //signal the LTQ of job arrival
+		//record time of arrival
+		job_timer = 0; //reset job timer
+		count++; //increment total number of jobs ran
+		more_jobs++; //increment number of jobs in the system
+		jobCount++;
+	}
 
-	//4. While there are jobs to be processed
+	//4. While there are jobs to be processed, manage the LTP
+	int x = 0;
+	while (Jobs[x].jobNumber < 100) {
+		if (ltq_empty == false) {
+			//increment wait counters for all processes in the queue
+		}
+		if (job_flag == true && ltq_full == false) {
+			LTQ[ltqCount] = Jobs[x].jobNumber-1; //add int corresponding to index of process array
+			job_flag = false;
+			ltq_empty = false;
+		}
+			//check for full LTQ
+		if (LTQ[60] != NULL) {
+			ltq_full = true;
+		}
+		x++;
+		//get another job into the system
+		if (Jobs[jobCount].interArrivalTime == job_timer) {
+			job_flag = true; //signal the LTQ of job arrival
+							 //record time of arrival
+			job_timer = 0; //reset job timer
+			count++; //increment total number of jobs ran
+			more_jobs++; //increment number of jobs in the system
+			jobCount++;
+		}
+	}
 
 	//5. 
 
@@ -125,6 +166,7 @@ void ReadData(ifstream &input, DataType Jobs[], int &jobsEU) {
 
 		input >> ws >> temp;
 		jobsEU++;
+		//if sentinel (-1) is read in as a CPU burst, return
 		if (tempCPUBurst < 0)
 			return;
 	}
