@@ -23,7 +23,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+
+//establish structure for input data
+struct DataType {
+	int jobNumber;
+	int jobLength;
+	int interArrivalTime;
+	int ioBurstLength;
+	int cpuBursts[20];
+	int cpuBurstEU = 0;
+};
+
 using namespace std;
+//read data into the array of structures
+void ReadData(ifstream &input, DataType Jobs[], int &jobsEU);
+//print data to the output file
+void PrintData(ofstream &output, DataType Jobs[], int &jobsEU);
 void AddJob(); //routine to add a job to a queue
 void DeleteJob(); //routine to delete a job from a queue
 void RemoveJob(); //routine to take a job out of the system
@@ -61,7 +76,20 @@ int main()
 	bool stq_empty = true;
 	bool stqu_full = false;
 
+	/*establish array of structures, assuming unknown amount of
+	jobs (i.e. >100 jobs) and establish EU count for jobs*/
+	DataType Jobs[200];
+	int jobsEU = 0;
+
+	//establish I/O
+	ifstream input("data.txt", ios::in);
+	ofstream output("output.txt", ios::out);
+	
 	//2. Read in all processes in input file into array of structures
+	ReadData(input, Jobs, jobsEU);
+
+	//print data as test
+	PrintData(output, Jobs, jobsEU);
 
 	//3. Get a job into the system.
 
@@ -72,6 +100,60 @@ int main()
 	return 0;
 }
 //******************************END OF FUNCTION Main***************************************************
+
+//***********************************FUNCTION ReadData*************************************************
+void ReadData(ifstream &input, DataType Jobs[], int &jobsEU) {
+	int temp;
+	int tempCPUBurst = 0;
+	input >> ws >> temp;
+
+	//read in data into array of structures until sentinel of negative number is read
+	while (temp >= 0)
+	{
+		Jobs[jobsEU].jobNumber = temp;
+		input >> ws >> Jobs[jobsEU].jobLength;
+		input >> ws >> Jobs[jobsEU].interArrivalTime;
+		input >> ws >> Jobs[jobsEU].ioBurstLength;
+		input >> ws >> tempCPUBurst;
+		//read in CPU burst into array until sentinel of 0 is read
+		while (tempCPUBurst > 0)
+		{
+			Jobs[jobsEU].cpuBursts[Jobs[jobsEU].cpuBurstEU] = tempCPUBurst;
+			Jobs[jobsEU].cpuBurstEU++;
+			input >> ws >> tempCPUBurst;
+		}
+
+		input >> ws >> temp;
+		jobsEU++;
+		if (tempCPUBurst < 0)
+			return;
+	}
+	return;
+}
+//******************************END OF FUNCTION ReadData***********************************************
+
+
+//***********************************FUNCTION PrintData************************************************
+
+void PrintData(ofstream &output, DataType Jobs[], int &jobsEU) {
+	output << "The original input data: \n";
+	for (int i = 0; i < jobsEU; i++) {
+		output << "Job number: " << Jobs[i].jobNumber << endl;
+		output << "Job length: " << Jobs[i].jobLength << endl;
+		output << "Inter arrival time: " << Jobs[i].interArrivalTime << endl;
+		output << "IO burst length: " << Jobs[i].ioBurstLength << endl;
+		output << "CPU bursts: ";
+		for (int j = 0; j < Jobs[i].cpuBurstEU; j++)
+		{
+			output << Jobs[i].cpuBursts[j] << " ";
+		}
+		output << endl << endl;
+	}
+	return;
+}
+//******************************END OF FUNCTION PrintData**********************************************
+
+
 
 //***********************************FUNCTION AddJob***************************************************
 void AddJob() {
