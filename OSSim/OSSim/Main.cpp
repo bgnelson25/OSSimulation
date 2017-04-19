@@ -32,6 +32,7 @@ struct DataType {
 	int ioBurstLength;
 	int cpuBursts[20];
 	int cpuBurstEU = 0;
+	int actualArrivalTime;
 };
 
 using namespace std;
@@ -102,7 +103,7 @@ int main()
 	job_timer++; //increment job timer
 	if (Jobs[jobCount].interArrivalTime == job_timer) {
 		job_flag = true; //signal the LTQ of job arrival
-		//record time of arrival
+		Jobs[jobCount].actualArrivalTime = job_timer; //record time of arrival
 		job_timer = 0; //reset job timer
 		count++; //increment total number of jobs ran
 		more_jobs++; //increment number of jobs in the system
@@ -111,20 +112,43 @@ int main()
 
 	//4. While there are jobs to be processed, manage the LTP
 	int x = 0;
-	while (Jobs[x].jobNumber < 100) {
+	while (process_timer > 0) {
 		if (ltq_empty == false) {
-			//increment wait counters for all processes in the queue
+			//4.1 increment wait counters for all processes in the queue
 		}
 		if (job_flag == true && ltq_full == false) {
 			LTQ[ltqCount] = Jobs[x].jobNumber-1; //add int corresponding to index of process array
 			job_flag = false;
 			ltq_empty = false;
+			x++;
 		}
 			//check for full LTQ
 		if (LTQ[60] != NULL) {
 			ltq_full = true;
 		}
-		x++;
+		//4.2 increment STQ Wait counters for processes in STQ.
+		if (stq_empty == false) {
+			//increment wait counters for all processes in the queue
+		}
+		if (io_complete_flag == true) {
+			io_complete_flag = false; //reset io_complete_flag
+			io_device_flag = true; //set io_device_flag to true
+			if (finished_flag == true) {
+				//remove job from system
+				more_jobs--; //decrement more jobs
+				finished_flag = false; //set finish_flag to false
+				//collect data: wait times, etc
+			}
+			else {
+				if (stqu_full == false) {
+					//place process in the STQ
+					devise = 0; //set device to zero
+					if (STQ[29] != NULL) {
+						stqu_full = true;
+					}
+				}
+			}
+		}
 		//get another job into the system
 		if (Jobs[jobCount].interArrivalTime == job_timer) {
 			job_flag = true; //signal the LTQ of job arrival
