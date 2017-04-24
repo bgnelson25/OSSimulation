@@ -190,6 +190,7 @@ void ReadData(ifstream &input, DataType Jobs[], int &jobsEU) {
 
 		input >> ws >> temp;
 		jobsEU++;
+		//return if negative number is read as a CPU burst
 		//if sentinel (-1) is read in as a CPU burst, return
 		if (tempCPUBurst < 0)
 			return;
