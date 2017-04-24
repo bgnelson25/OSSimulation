@@ -88,6 +88,7 @@ int main()
 	int stqCount = 0;
 	int ioqCount = 0;
 	int jobCount = 0;
+	int jobIndex = 1;
 
 	//establish I/O
 	ifstream input("data.txt", ios::in);
@@ -107,29 +108,34 @@ int main()
 		job_timer = 0; //reset job timer
 		count++; //increment total number of jobs ran
 		more_jobs++; //increment number of jobs in the system
-		jobCount++;
+		process_timer = Jobs[jobCount].cpuBurstEU;
 	}
 
 	//4. While there are jobs to be processed, manage the LTP
-	int x = 0;
 	while (process_timer > 0) {
+		//4.1.1
 		if (ltq_empty == false) {
-			//4.1 increment wait counters for all processes in the queue
+			//increment wait counters for all processes in the queue
 		}
+		//4.1.12
 		if (job_flag == true && ltq_full == false) {
-			LTQ[ltqCount] = Jobs[x].jobNumber-1; //add int corresponding to index of process array
+			LTQ[ltqCount] = Jobs[jobCount-1].jobNumber; //add int corresponding to index of process array
 			job_flag = false;
 			ltq_empty = false;
-			x++;
+			jobCount++; //increment job index
 		}
-			//check for full LTQ
+		//4.1.3 check for full LTQ
 		if (LTQ[60] != NULL) {
 			ltq_full = true;
 		}
-		//4.2 increment STQ Wait counters for processes in STQ.
+		/*4.2 This routine increments the STQ Wait counters for all processes in the STQ. It then moves a job, that is
+		finished with the I/O device, from the I/O device to the STQ.*/
+
+		//4.2.1 increment STQ Wait counters for processes in STQ.
 		if (stq_empty == false) {
 			//increment wait counters for all processes in the queue
 		}
+		//4.2.2 check if io_complet_flag is true
 		if (io_complete_flag == true) {
 			io_complete_flag = false; //reset io_complete_flag
 			io_device_flag = true; //set io_device_flag to true
@@ -162,6 +168,8 @@ int main()
 			stqu_full = true;
 		}
 		//4.3 Managing the CPU
+
+		//4.3.1 check if the process is suspended
 		if (suspend_flag == true) { //the process is suspended
 			suspend_timer--; //decrement suspend timer
 			if (suspend_timer == 0) { //check for completion of interrupt
@@ -175,7 +183,7 @@ int main()
 				}
 			}
 		}
-		//4.3.2
+		//4.3.2 check for interrupt if processing has not been halted
 		if (stop_flag == false) { //check for interrupt flag if processing has not halted
 			if (interrput_flag == true) {
 				if (cpu > 0) {
@@ -278,7 +286,7 @@ int main()
 			job_timer = 0; //reset job timer
 			count++; //increment total number of jobs ran
 			more_jobs++; //increment number of jobs in the system
-			jobCount++;
+			process_timer = Jobs[jobCount].cpuBurstEU;
 		}
 	}
 
