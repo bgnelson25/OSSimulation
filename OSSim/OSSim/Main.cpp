@@ -3,7 +3,7 @@
 //*		PROGRAM FILE NAME:	Main.cpp			ASSIGNMENT #:	2			Grade: _________          *
 //*                                                                                                   *
 //*		PROGRAM AUTHORS:	_____________________________     __________________________________      *
-//*                                      Carly Fristoe				  Ben Nelson                      *
+//*                                      Carly Fristoe				  Benjamin Nelson                 *
 //*                                                                                                   *
 //*		COURSE #:	CSC 40600							DUE DATE:	May 5, 2017                       *
 //*                                                                                                   *
@@ -149,6 +149,128 @@ int main()
 				}
 			}
 		}
+		//4.2.3 (reads as 4.3.3 on the sheet but its a typo)
+		if ((stqu_full == false) & (ltq_empty == false)) {
+			//move process from the LTQ to the STQ
+			stq_empty = false; //set sqt_empty to false
+
+			if (LTQ[0] == NULL) { //if LTQ is empty
+				ltq_empty = true; //set ltq to empty
+				ltq_full = false; //set ltq to not be full
+			}
+			if (STQ[29] != NULL) //if STQ is full
+			stqu_full = true;
+		}
+		//4.3 Managing the CPU
+		if (suspend_flag == true) { //the process is suspended
+			suspend_timer--; //decrement suspend timer
+			if (suspend_timer == 0) { //check for completion of interrupt
+				interrput_flag = false;
+				suspend_flag = false;
+			}
+			else {
+				if (temp == process) { //process is in CPU when interrupt occured
+					//increment cpu wait counter
+					stop_flag = true;
+				}
+			}
+		}
+		//4.3.2
+		if (stop_flag == false) { //check for interrupt flag if processing has not halted
+			if (interrput_flag == true) {
+				if (cpu > 0) {
+					temp = cpu; //supend the process
+					cpu = 0;
+				}
+				suspend_timer = 3;
+				suspend_flag = true;
+			}
+		}
+		else {
+			if (cpu == process) {
+				process_timer++; //increment process timer
+				if (process_timer == Jobs[jobCount].cpuBurstEU) { //if process timer equals cpu burst length
+					cpu_complete_flag = true;
+					process_timer = 0;
+				}
+			}
+			else { //if there is no interrupt and a job is in the cpu, process the cpu burst and check to see if it is finished
+				if (temp == process) {
+					process_timer++; //increment process timer
+					if (process_timer == Jobs[jobCount].cpuBurstEU) { // if process timer equals cpu burst length
+						cpu_complete_flag = true; //set cpu complete flag to true
+						process_timer = 0; //set process timer to 0
+					}
+				}
+				else {
+					if (temp == process) {
+						cpu = process;
+						//increment cpu wait counter
+						temp = 0; //set temp to 0
+					}
+					else { /* if the interrupt flag is not set and if a process has nto been suspended and if the stq is not
+						   empty, get the next job for the cpu, reset the cpu ready flag, and reset the process timer*/
+						if (stq_empty == false && cpu_ready_flag == true) {
+							//set process equal to the head of the stq
+							cpu = process;
+							//delete job from the queue
+							stqu_full = false;
+							if (STQ[0] == NULL) //if STQ is empty
+								stq_empty = true;
+							cpu_ready_flag = false;
+							process_timer = 0;
+						}
+					}
+				}
+			}
+		}
+		stop_flag = false;
+
+		/*4.4 Manage the I/O Queue - This routine increments the I/O Wait counters for all processs in the I/O queue
+		and places any job with the CPU in the back of the queue*/
+
+		//4.4.1
+		if (ioq_empty == false) {
+			//increment I/O queue wait counter for all processes in the queue
+		}
+		//4.4.2
+		if (cpu_complete_flag == true) {
+			if (ioq_full == false) {
+				//add the process to the tail of the queue
+				cpu = 0;
+				ioq_empty = false;
+				cpu_ready_flag = true;
+				if (IOQ[29] != NULL)
+					ioq_full = true;
+				cpu_complete_flag = false;
+			}
+		}
+		//4.5 Manage I/O Devices
+		if (interrput_flag == false) {
+			if (devise == ioprocess) { //then process is in the I/O device
+				//increment the I/O timer
+				if (io_timer == Jobs[jobCount + 1].cpuBurstEU) { //next CPU burst length
+					interrput_flag = true;
+				}
+				else {
+					finished_flag = true;
+				}
+			}
+			else {
+				if (ioq_empty == false && io_device_flag == true) { /*the I/O queue is not empty so place a 
+																	process in the I/O device from the queue*/
+					ioprocess = IOQ[0]; //ioprocess equals head of the queue
+					devise = ioprocess;
+					//delete job from the I/O queue
+					if (IOQ[0] == NULL)
+						ioq_empty = true;
+					io_timer = 0;
+					io_device_flag = false;
+				}
+			}
+		}
+
+
 		//get another job into the system
 		if (Jobs[jobCount].interArrivalTime == job_timer) {
 			job_flag = true; //signal the LTQ of job arrival
