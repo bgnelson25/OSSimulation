@@ -32,6 +32,7 @@ struct DataType {
 	int ioBurstLength;
 	int cpuBursts[20];
 	int cpuBurstEU = 0;
+	int actualArrivalTime;
 };
 
 using namespace std;
@@ -80,6 +81,13 @@ int main()
 	jobs (i.e. >100 jobs) and establish EU count for jobs*/
 	DataType Jobs[200];
 	int jobsEU = 0;
+	int LTQ[60]; //create Long term queue
+	int STQ[30]; //create short term queue
+	int IOQ[30]; //create I/O queue
+	int ltqCount = 0;
+	int stqCount = 0;
+	int ioqCount = 0;
+	int jobCount = 0;
 
 	//establish I/O
 	ifstream input("data.txt", ios::in);
@@ -91,9 +99,66 @@ int main()
 	//print data as test
 	PrintData(output, Jobs, jobsEU);
 
-	//3. Get a job into the system.
+	//3. Get first job into the system.
+	job_timer++; //increment job timer
+	if (Jobs[jobCount].interArrivalTime == job_timer) {
+		job_flag = true; //signal the LTQ of job arrival
+		Jobs[jobCount].actualArrivalTime = job_timer; //record time of arrival
+		job_timer = 0; //reset job timer
+		count++; //increment total number of jobs ran
+		more_jobs++; //increment number of jobs in the system
+		jobCount++;
+	}
 
-	//4. While there are jobs to be processed
+	//4. While there are jobs to be processed, manage the LTP
+	int x = 0;
+	while (process_timer > 0) {
+		if (ltq_empty == false) {
+			//4.1 increment wait counters for all processes in the queue
+		}
+		if (job_flag == true && ltq_full == false) {
+			LTQ[ltqCount] = Jobs[x].jobNumber-1; //add int corresponding to index of process array
+			job_flag = false;
+			ltq_empty = false;
+			x++;
+		}
+			//check for full LTQ
+		if (LTQ[60] != NULL) {
+			ltq_full = true;
+		}
+		//4.2 increment STQ Wait counters for processes in STQ.
+		if (stq_empty == false) {
+			//increment wait counters for all processes in the queue
+		}
+		if (io_complete_flag == true) {
+			io_complete_flag = false; //reset io_complete_flag
+			io_device_flag = true; //set io_device_flag to true
+			if (finished_flag == true) {
+				//remove job from system
+				more_jobs--; //decrement more jobs
+				finished_flag = false; //set finish_flag to false
+				//collect data: wait times, etc
+			}
+			else {
+				if (stqu_full == false) {
+					//place process in the STQ
+					devise = 0; //set device to zero
+					if (STQ[29] != NULL) {
+						stqu_full = true;
+					}
+				}
+			}
+		}
+		//get another job into the system
+		if (Jobs[jobCount].interArrivalTime == job_timer) {
+			job_flag = true; //signal the LTQ of job arrival
+							 //record time of arrival
+			job_timer = 0; //reset job timer
+			count++; //increment total number of jobs ran
+			more_jobs++; //increment number of jobs in the system
+			jobCount++;
+		}
+	}
 
 	//5. 
 
@@ -126,6 +191,7 @@ void ReadData(ifstream &input, DataType Jobs[], int &jobsEU) {
 		input >> ws >> temp;
 		jobsEU++;
 		//return if negative number is read as a CPU burst
+		//if sentinel (-1) is read in as a CPU burst, return
 		if (tempCPUBurst < 0)
 			return;
 	}
